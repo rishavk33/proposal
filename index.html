@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="theme-color" content="#000000">
+    <meta name="description" content="A special question for a special person. ❤️">
+
+    <title>My Heart Beats For You 💖</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💖</text></svg>">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,500;1,700&family=Dancing+Script:wght@600;700&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <style>
+        /* Base Reset */
+        *, *::before, *::after { box-sizing: border-box; }
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background: #020202; color: white;
+            font-family: 'Outfit', sans-serif;
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Canvas Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Typography */
+        .font-main-title { font-family: 'Dancing Script', cursive; letter-spacing: 0.02em; }
+        .font-elegant { font-family: 'Playfair Display', serif; font-style: italic; }
+        
+        .text-glow {
+            text-shadow: 0 0 20px rgba(255, 105, 180, 0.5), 0 0 40px rgba(255, 20, 147, 0.3);
+        }
+
+        /* Screens */
+        .screen {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; min-height: 100%;
+            display: flex;
+            align-items: center; justify-content: center;
+            padding: 20px;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s ease-in-out;
+        }
+        .screen.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(20, 10, 10, 0.45);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.8), inset 0 0 40px rgba(255, 20, 80, 0.05);
+            border-radius: 2.5rem;
+            padding: 2.5rem;
+            width: 100%;
+            max-w: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* Polaroid Image Effect */
+        .image-container {
+            position: relative;
+            width: 250px; height: 250px;
+            margin: 1.5rem 0 2.5rem 0;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: rotate(-2deg);
+            transition: transform 0.5s ease;
+        }
+        .image-container:hover { transform: rotate(0deg) scale(1.02); }
+        .image-container img { width: 100%; height: 100%; object-fit: contain; }
+        
+        .tape-strip {
+            position: absolute;
+            top: -12px; left: 50%;
+            transform: translateX(-50%) rotate(-1.5deg);
+            width: 100px; height: 30px;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(5px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex; gap: 20px; width: 100%;
+            justify-content: center; align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            cursor: pointer; border: none; outline: none;
+            border-radius: 4px; transition: all 0.3s ease;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .btn-yes {
+            padding: 1.2rem 3rem;
+            background: linear-gradient(to right, #e11d48, #f43f5e);
+            color: white; font-weight: bold; font-size: 1.2rem;
+            text-transform: uppercase; letter-spacing: 2px;
+            box-shadow: 0 10px 25px rgba(225, 29, 72, 0.4);
+            position: relative; overflow: hidden;
+        }
+        .btn-yes:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(225, 29, 72, 0.6); }
+        
+        .btn-no {
+            padding: 1.1rem 3rem;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.2rem;
+            position: relative;
+        }
+        .btn-no:hover { background: rgba(255, 255, 255, 0.05); color: white; border-color: white; }
+
+        .btn-replay {
+            padding: 0.8rem 2rem; margin-top: 1rem;
+            background: transparent; border: 1px solid rgba(244, 63, 94, 0.3);
+            color: #fda4af; text-transform: uppercase;
+            font-size: 0.8rem; letter-spacing: 2px; border-radius: 50px;
+        }
+        .btn-replay:hover { background: rgba(244, 63, 94, 0.2); color: white; }
+
+        /* Floating CSS Emojis */
+        .floating-decor-container { position: fixed; inset: 0; pointer-events: none; z-index: 1; overflow: hidden;}
+        .floating-emoji {
+            position: absolute; bottom: -10%;
+            animation: floatUp linear infinite;
+            opacity: 0.6; filter: drop-shadow(0 0 5px rgba(255, 105, 180, 0.5));
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg) scale(0.8); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-110vh) rotate(360deg) scale(1.2); opacity: 0; }
+        }
+        
+        /* Animations */
+        .pulse { animation: pulseAnim 2s infinite; cursor: pointer; }
+        @keyframes pulseAnim {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        /* Utilities */
+        h1 { margin: 0 0 1rem 0; font-size: clamp(2.5rem, 6vw, 4.5rem); color: #f472b6; }
+        p.subtitle { font-size: clamp(1rem, 3vw, 1.25rem); color: rgba(255, 255, 255, 0.9); line-height: 1.6; min-height: 4em;}
+        .init-text { text-align: center; }
+        .init-text h1 { font-size: clamp(3.5rem, 10vw, 7rem); }
+        .init-text p { letter-spacing: 0.4em; color: rgba(255, 255, 255, 0.6); text-transform: uppercase; font-size: 0.875rem; margin-top: 1rem;}
+    </style>
+</head>
+<body>
+
+    <!-- Audio Element (Replace source with your local file) -->
+    <audio id="loveSong" loop preload="auto">
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
+
+    <canvas id="bg-canvas"></canvas>
+    <div id="floating-decor" class="floating-decor-container"></div>
+
+    <!-- Screen 1: Init -->
+    <div id="screen-init" class="screen active">
+        <div class="init-text pulse" onclick="startExperience()">
+            <h1 class="font-main-title text-glow">Love Awaits</h1>
+            <p class="font-elegant">Tap to Begin Our Story</p>
+        </div>
+    </div>
+
+    <!-- Screen 2: Asking -->
+    <div id="screen-asking" class="screen">
+        <div class="glass-card" style="max-width: 700px;">
+            <h1 id="ask-title" class="font-main-title text-glow">Will You Be My Forever?</h1>
+            <p id="ask-desc" class="font-elegant subtitle"></p>
+            
+            <div class="image-container">
+                <div class="tape-strip"></div>
+                <!-- Replace with your default GIF -->
+                <img id="ask-img" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcDdtZ2JiZDR0a3lvMDF4OG43bnk2b3NxanF4YnZ4N3k1eXJ3bnIxZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/MDJ9IbxxvDUQM/giphy.gif" alt="Cute Cat">
+            </div>
+
+            <div class="btn-group">
+                <button class="btn-yes" onclick="handleYes()">Yes, Forever</button>
+                <button id="btn-no" class="btn-no font-elegant" onclick="handleNo()">No</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 3: Success -->
+    <div id="screen-success" class="screen">
+        <div class="glass-card" style="max-width: 800px;">
+            <h1 class="font-main-title text-glow" style="font-size: clamp(3rem, 8vw, 5.5rem);">Forever & Always</h1>
+            
+            <div class="image-container" style="width: 300px; height: 300px;">
+                <div class="tape-strip"></div>
+                <!-- Replace with your success GIF -->
+                <img src="https://media.giphy.com/media/l4pTfx2qLszoacZRS/giphy.gif" alt="Kissing Cats">
+            </div>
+
+            <p class="font-elegant" style="font-size: 1.5rem; color: #fce7f3; margin-bottom: 2rem;">
+                "You are my today and all of my tomorrows."
+            </p>
+            <button class="btn-replay" onclick="resetExperience()">↺ Replay Memory</button>
+        </div>
+    </div>
+
+    <script>
+        /* --- ASSETS & DATA --- */
+        // Note: Update these paths to match the files you upload to GitHub
+        const IMAGES = {
+            main: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcDdtZ2JiZDR0a3lvMDF4OG43bnk2b3NxanF4YnZ4N3k1eXJ3bnIxZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/MDJ9IbxxvDUQM/giphy.gif",
+            rejections: [
+                "https://media.giphy.com/media/2rtQMJvhzOnRe/giphy.gif",
+                "https://media.giphy.com/media/OPU6wzx8JrHna/giphy.gif",
+                "https://media.giphy.com/media/qQdL532ZANbjy/giphy.gif",
+                "https://media.giphy.com/media/L95W4wv8nnb9K/giphy.gif",
+                "https://media.giphy.com/media/3o6wrvdHFbwBrUFenu/giphy.gif"
+            ]
+        };
+
+        const MESSAGES = [
+            { t: "Will You Be My Forever?", s: "In a universe of billions, my heart chose you. You are my clarity in chaos. Will you walk this life with me?" },
+            { t: "Wait... Really? 🥺", s: "Is this real? My heart skipped a beat when you hesitated. Please don't close the book on us." },
+            { t: "Don't Break My Heart 💔", s: "I promise laughter, strength, and a love that never fades. Please, give us a chance to shine." },
+            { t: "I'm Pleading With You 🙏", s: "I will cross oceans just to see you smile. You are the only one I want, today and always." },
+            { t: "Please... Don't Do This 😭", s: "This silence is deafening. We are two halves of the same whole. Tell me you feel it too!" },
+            { t: "LAST CHANCE! 🌹", s: "Destiny brought us here. I am fighting for us because we are rare and magical. Say YES! 💖" }
+        ];
+
+        /* --- STATE --- */
+        let currentIndex = 0;
+        let typingInterval;
+        const audio = document.getElementById('loveSong');
+
+        /* --- BACKGROUND PARTICLES (Replaces Three.js) --- */
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.reset();
+                this.y = Math.random() * canvas.height; 
+            }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + 10;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedY = Math.random() * 1 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.opacity = Math.random() * 0.7 + 0.3;
+                this.color = Math.random() > 0.5 ? '255, 0, 100' : '255, 183, 197';
+            }
+            update() {
+                this.y -= this.speedY;
+                this.x += this.speedX;
+                if (this.y < -10) this.reset();
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${this.color}, ${this.opacity})`;
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 150; i++) particles.push(new Particle());
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        /* --- FLOATING CSS EMOJIS --- */
+        const decorContainer = document.getElementById('floating-decor');
+        const emojis = ['💕', '💖', '💗', '💓', '💝', '💋', '✨', '🌹'];
+        for (let i = 0; i < 20; i++) {
+            let el = document.createElement('div');
+            el.className = 'floating-emoji';
+            el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            el.style.left = `${Math.random() * 100}vw`;
+            el.style.animationDuration = `${10 + Math.random() * 15}s`;
+            el.style.animationDelay = `-${Math.random() * 15}s`;
+            el.style.fontSize = `${20 + Math.random() * 20}px`;
+            decorContainer.appendChild(el);
+        }
+
+        /* --- LOGIC & INTERACTION --- */
+        function switchScreen(hideId, showId) {
+            document.getElementById(hideId).classList.remove('active');
+            setTimeout(() => {
+                document.getElementById(showId).classList.add('active');
+            }, 800);
+        }
+
+        function typeWriter(text, elementId, speed = 30) {
+            const el = document.getElementById(elementId);
+            el.innerHTML = "";
+            let i = 0;
+            clearInterval(typingInterval);
+            typingInterval = setInterval(() => {
+                if (i < text.length) {
+                    el.innerHTML += text.charAt(i);
+                    i++;
+                } else {
+                    clearInterval(typingInterval);
+                }
+            }, speed);
+        }
+
+        function startExperience() {
+            // Attempt to play audio
+            audio.volume = 0.5;
+            audio.play().catch(e => console.log("Audio autoplay prevented by browser"));
+            
+            // Check local storage memory
+            if (localStorage.getItem('my_love_ultimate') === 'true') {
+                switchScreen('screen-init', 'screen-success');
+            } else {
+                switchScreen('screen-init', 'screen-asking');
+                updateAskingUI();
+            }
+        }
+
+        function updateAskingUI() {
+            const msg = MESSAGES[currentIndex];
+            document.getElementById('ask-title').innerText = msg.t;
+            typeWriter(msg.s, 'ask-desc');
+
+            const imgSrc = currentIndex === 0 
+                ? IMAGES.main 
+                : IMAGES.rejections[Math.min(currentIndex - 1, IMAGES.rejections.length - 1)];
+            
+            document.getElementById('ask-img').src = imgSrc;
+        }
+
+        function handleNo() {
+            if (currentIndex < MESSAGES.length - 1) {
+                currentIndex++;
+                updateAskingUI();
+            }
+        }
+
+        function handleYes() {
+            localStorage.setItem('my_love_ultimate', 'true');
+            switchScreen('screen-asking', 'screen-success');
+            createExplosion();
+        }
+
+        function resetExperience() {
+            localStorage.removeItem('my_love_ultimate');
+            window.location.reload();
+        }
+
+        /* --- "NO" BUTTON DODGE LOGIC --- */
+        const noBtn = document.getElementById('btn-no');
+        
+        function dodgeButton() {
+            if (currentIndex >= 5) { // Only dodge on the LAST CHANCE screen
+                const x = (Math.random() - 0.5) * 300;
+                const y = (Math.random() - 0.5) * 300;
+                noBtn.style.transform = `translate(${x}px, ${y}px)`;
+            }
+        }
+        
+        noBtn.addEventListener('mouseover', dodgeButton);
+        noBtn.addEventListener('touchstart', dodgeButton);
+
+        /* --- SUCCESS EXPLOSION EFFECT --- */
+        function createExplosion() {
+            for (let i = 0; i < 80; i++) {
+                const drop = document.createElement('div');
+                drop.style.position = 'fixed';
+                drop.style.left = '50%';
+                drop.style.top = '50%';
+                drop.style.width = '8px';
+                drop.style.height = '8px';
+                drop.style.backgroundColor = Math.random() > 0.5 ? '#f43f5e' : '#fff';
+                drop.style.borderRadius = '50%';
+                drop.style.zIndex = '999';
+                drop.style.pointerEvents = 'none';
+                document.body.appendChild(drop);
+
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = 5 + Math.random() * 15;
+                let vx = Math.cos(angle) * velocity;
+                let vy = Math.sin(angle) * velocity;
+                let opacity = 1;
+
+                function animateDrop() {
+                    const rect = drop.getBoundingClientRect();
+                    drop.style.left = (rect.left + vx) + 'px';
+                    drop.style.top = (rect.top + vy) + 'px';
+                    vy += 0.2; // gravity
+                    opacity -= 0.015;
+                    drop.style.opacity = opacity;
+
+                    if (opacity > 0) requestAnimationFrame(animateDrop);
+                    else drop.remove();
+                }
+                requestAnimationFrame(animateDrop);
+            }
+        }
+        
+        // Preload images silently
+        window.addEventListener('DOMContentLoaded', () => {
+            [IMAGES.main, ...IMAGES.rejections].forEach(src => {
+                const img = new Image();
+                img.src = src;
+            });
+        });
+    </script>
+</body>
+</html>
