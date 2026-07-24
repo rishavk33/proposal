@@ -388,20 +388,15 @@
             }, speed);
         }
 
-        function startExperience() {
+       function startExperience() {
             // Attempt to play audio
             audio.volume = 0.5;
             audio.play().catch(e => console.log("Audio autoplay prevented by browser"));
             
-            // Check local storage memory
-            if (localStorage.getItem('my_love_ultimate') === 'true') {
-                switchScreen('screen-init', 'screen-success');
-            } else {
-                switchScreen('screen-init', 'screen-asking');
-                updateAskingUI();
-            }
+            // ALWAYS go to the asking screen, ignoring previous memory
+            switchScreen('screen-init', 'screen-asking');
+            updateAskingUI();
         }
-
         function updateAskingUI() {
             const msg = MESSAGES[currentIndex];
             document.getElementById('ask-title').innerText = msg.t;
